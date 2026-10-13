@@ -1,0 +1,107 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Paleta Cafelink: cálida y artesanal (ver docs, sección 9.2) */
+:root {
+  --radius: 0.75rem;
+  --background: #fbf7f2;
+  --foreground: #2b1d16;
+  --card: #ffffff;
+  --card-foreground: #2b1d16;
+  --popover: #ffffff;
+  --popover-foreground: #2b1d16;
+  --primary: #6f4a2f;
+  --primary-foreground: #fbf7f2;
+  --secondary: #f1e8dd;
+  --secondary-foreground: #2b1d16;
+  --muted: #f4ece2;
+  --muted-foreground: #6b5a4f;
+  --accent: #d98e3f;
+  --accent-foreground: #2b1d16;
+  --destructive: #b3402f;
+  --border: #e7ddd2;
+  --input: #e7ddd2;
+  --ring: #6f4a2f;
+  --success: #3e7d5a;
+  --warning: #c9822b;
+}
+
+.dark {
+  --background: #1c1410;
+  --foreground: #f3e9df;
+  --card: #2a1f19;
+  --card-foreground: #f3e9df;
+  --popover: #2a1f19;
+  --popover-foreground: #f3e9df;
+  --primary: #d9a273;
+  --primary-foreground: #1c1410;
+  --secondary: #382a22;
+  --secondary-foreground: #f3e9df;
+  --muted: #33261f;
+  --muted-foreground: #b7a597;
+  --accent: #d98e3f;
+  --accent-foreground: #1c1410;
+  --destructive: #e0705e;
+  --border: #43342b;
+  --input: #43342b;
+  --ring: #d9a273;
+  --success: #6fb58c;
+  --warning: #e0a050;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: "Fraunces Variable", Georgia, "Times New Roman", serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

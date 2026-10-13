@@ -1,0 +1,89 @@
+rules_version = '2';
+
+// Modelo de seguridad de Cafelink
+// - Multi-tenencia por ruta: todo vive bajo /cafes/{cafeId}/...
+// - El cliente (navegador) solo LEE. Toda escritura pasa por el servidor
+//   (Server Actions / Route Handlers con Admin SDK, que ignora estas reglas)
+//   para poder aplicar antifraude, límites y auditoría.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function memberPath(cafeId) {
+      return /databases/$(database)/documents/cafes/$(cafeId)/members/$(request.auth.uid);
+    }
+
+    function isMember(cafeId) {
+      return signedIn() && exists(memberPath(cafeId));
+    }
+
+    function isManager(cafeId) {
+      return isMember(cafeId)
+        && get(memberPath(cafeId)).data.role in ['owner', 'manager'];
+    }
+
+    // Índice de usuario: solo se lee el propio
+    match /users/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /cafes/{cafeId} {
+      allow read: if isMember(cafeId);
+      allow write: if false;
+
+      match /members/{uid} {
+        allow read: if isMember(cafeId);
+        allow write: if false;
+      }
+
+      match /locations/{locationId} {
+        allow read: if isMember(cafeId);
+        allow write: if false;
+      }
+
+      match /programs/{programId} {
+        allow read: if isMember(cafeId);
+        allow write: if false;
+      }
+
+      match /customers/{customerId} {
+        // El equipo ve todo; el cliente ve solo su propio perfil
+        allow read: if isMember(cafeId)
+          || (signedIn() && resource.data.personUid == request.auth.uid);
+        allow write: if false;
+
+        match /notes/{noteId} {
+          // Las notas del equipo nunca son visibles para el cliente
+          allow read: if isMember(cafeId);
+          allow write: if false;
+        }
+
+        match /cards/{programId} {
+          allow read: if isMember(cafeId)
+            || (signedIn()
+                && get(/databases/$(database)/documents/cafes/$(cafeId)/customers/$(customerId)).data.personUid == request.auth.uid);
+          allow write: if false;
+        }
+      }
+
+      match /visits/{visitId} {
+        allow read: if isMember(cafeId);
+        allow write: if false;
+      }
+
+      match /opportunities/{opportunityId} {
+        allow read: if isManager(cafeId);
+        allow write: if false;
+      }
+    }
+
+    // Todo lo demás, denegado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

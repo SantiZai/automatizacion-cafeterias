@@ -193,6 +193,20 @@
 - **Archivos:** `src/app/api/auth/session/route.ts`.
 - **Verificación:** `eslint` OK, `tsc` OK, `vitest` 50/50 OK, `next build` OK.
 
+## 2026-10-14 — Métricas del café (`/dashboard/metricas`)
+
+- **Qué:** resumen (activos, visitas 30d, frecuencia, en riesgo, recuperados, tasa de canje), retención 30/60/90, visitas por local, reseñas/historias del mes y cohortes por mes de alta. Sin datos muestra estado vacío con link al QR.
+- **Archivos:**
+  - `src/domain/metrics.ts` + `metrics.test.ts` (nuevos) — cálculos puros y testeados
+  - `src/lib/data/metrics.ts` (nuevo) — agrega clientes, visitas, canjes, reclamos y oportunidades
+  - `src/app/(app)/dashboard/metricas/page.tsx` (nueva) — tarjetas, barras y tablas sin librerías
+  - `src/app/(app)/dashboard/page.tsx` — acceso a Métricas
+- **Decisiones:**
+  - Retención = % con 2+ visitas entre los de hace N+ días (vuelve al menos una vez).
+  - Recuperado = oportunidad enviada y el cliente volvió después (por cliente único).
+  - Sin índices nuevos (igualdades sueltas + un `orderBy` simple).
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 54/54 OK, `next build` OK (ruta `/dashboard/metricas`).
+
 ## 2026-10-14 — Cuentas solo del administrador (email + contraseña, sin registro público)
 
 - **Qué:** login con mail y contraseña; la sesión solo acepta proveedor `password`; panel `/admin` (solo `ADMIN_EMAILS`) para crear café + cuenta o agregar cuenta a café existente; `/onboarding` avisa en vez de crear; página `/dashboard/cuenta` para cambiar la contraseña.

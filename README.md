@@ -129,6 +129,7 @@ cafes/{cafeId}                                name, slug, plan, timezone, settin
 - [x] Motor de oportunidades (`/dashboard/oportunidades`): ausencias, premio cercano y cumpleaños, con mensaje listo para copiar (modo Esencial)
 - [x] Sellos extra (`/dashboard/aprobar`): reseña +2 / historia +1 con aprobación del staff y cooldown de 30 días
 - [x] Configuración de la promo (`/dashboard/programa`): sellos, premio y antifraude con ajuste automático de tarjetas
+- [x] Métricas (`/dashboard/metricas`): activos, frecuencia, retención 30/60/90, recuperados, canje, por local y cohortes
 - [ ] Probar reglas de Firestore con `@firebase/rules-unit-testing` (requiere emuladores)
 
 ## Próximo sprint

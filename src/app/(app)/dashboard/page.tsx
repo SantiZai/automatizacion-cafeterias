@@ -132,6 +132,15 @@ export default async function DashboardPage() {
             Cambiar contraseña
           </span>
         </Link>
+        <Link
+          href="/dashboard/metricas"
+          className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"
+        >
+          Métricas
+          <span className="block text-sm font-normal text-muted-foreground">
+            Retención y frecuencia
+          </span>
+        </Link>
         {showAdmin ? (
           <Link
             href="/admin"

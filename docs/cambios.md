@@ -115,6 +115,21 @@
   - La foto del QR sirve hasta 10 min, pero el antifraude (1 sello/día, 240 min entre sellos) bloquea el abuso. Se prioriza conversión en el alta.
 - **Verificación:** `eslint` OK, `tsc` OK, `vitest` 32/32 OK, `next build` OK.
 
+## 2026-10-14 — Motor de oportunidades + bandeja del dueño (F3, modo Esencial)
+
+- **Qué:** detección de ausencias (14+ días, 2+ visitas), premio cercano (1-2 restantes) y cumpleaños (si hay fecha); bandeja en `/dashboard/oportunidades` con mensaje listo, Copiar, Marcar enviado y Descartar. Contador real en `/dashboard`.
+- **Por qué:** es el diferencial vs. tarjeta de papel: invitar a volver en un toque.
+- **Archivos:**
+  - `src/domain/opportunities.ts` + `opportunities.test.ts` (nuevos) — reglas puras y mensajes rioplatenses
+  - `src/lib/data/opportunities.ts` (nuevo) — listado, conteo, evaluación idempotente (`{customerId}_{kind}_{periodKey}`), cambio de estado
+  - `src/app/(app)/dashboard/oportunidades/page.tsx` + `actions.ts` + `copy-button.tsx` (nuevos)
+  - `src/app/(app)/dashboard/page.tsx` — contador real + acceso a Oportunidades
+- **Decisiones:**
+  - Plan Esencial: copiar y pegar a mano (el envío WhatsApp en un toque es F4, próximo).
+  - Ausencia con `periodKey` = día (reaparece al día siguiente si sigue ausente); premio cercano estable por nivel de sellos (no duplica cada día).
+  - Cumpleaños solo si el cliente tiene `birthday` (ISO o MM-DD); todavía no hay UI para cargarlo.
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 39/39 OK, `next build` OK (ruta `/dashboard/oportunidades`).
+
 ---
 
 ## Cómo agregar una entrada nueva

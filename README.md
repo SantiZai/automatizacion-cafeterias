@@ -123,13 +123,14 @@ cafes/{cafeId}                                name, slug, plan, timezone, settin
 - [x] Ficha de cliente (`/dashboard/clientes`): búsqueda, pedido, gustos, notas y visitas
 - [x] Canje de premios (código temporal de 2 min + confirmación del staff en `/dashboard/canjear`)
 - [x] Reglas de seguridad de Firestore (incluye `redemptions`)
+- [x] Motor de oportunidades (`/dashboard/oportunidades`): ausencias, premio cercano y cumpleaños, con mensaje listo para copiar (modo Esencial)
 - [ ] Probar reglas de Firestore con `@firebase/rules-unit-testing` (requiere emuladores)
 
 ## Próximo sprint
 
-1. Motor de oportunidades (cumpleaños, ausencias, premio cercano) y bandeja del dueño.
+1. Envío por WhatsApp en un toque (plantillas + opt-in + estados).
 2. Sellos extra por reseña/historia con aprobación del staff.
-3. Mensajes por WhatsApp en un toque y facturación con Mercado Pago.
+3. Facturación con Mercado Pago.
 
 ## Notas
 

@@ -14,6 +14,7 @@ import {
 import { requireSession } from "@/lib/auth/session";
 import { getUserCafe } from "@/lib/data/cafes";
 import { getDashboardStats } from "@/lib/data/customers";
+import { countOpenOpportunities } from "@/lib/data/opportunities";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -23,10 +24,11 @@ export default async function DashboardPage() {
   if (!cafe) redirect("/onboarding");
 
   const statsData = await getDashboardStats(cafe.id, cafe.timezone);
+  const openOpportunities = await countOpenOpportunities(cafe.id);
   const stats = [
     { label: "Visitas hoy", value: String(statsData.visitsToday) },
     { label: "Clientes activos", value: String(statsData.activeCustomers) },
-    { label: "Oportunidades", value: "0" },
+    { label: "Oportunidades", value: String(openOpportunities) },
   ];
   const hasVisit = statsData.totalVisits > 0;
   const steps = [
@@ -62,7 +64,18 @@ export default async function DashboardPage() {
         ))}
       </section>
 
-      <section aria-label="Accesos" className="grid gap-4 sm:grid-cols-3">
+      <section aria-label="Accesos" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Link
+          href="/dashboard/oportunidades"
+          className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"
+        >
+          Oportunidades
+          <span className="block text-sm font-normal text-muted-foreground">
+            {openOpportunities === 0
+              ? "Sin pendientes por ahora"
+              : `${openOpportunities} para revisar`}
+          </span>
+        </Link>
         <Link
           href="/dashboard/qr"
           className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"

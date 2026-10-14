@@ -100,6 +100,21 @@
   - Varios códigos pendientes del mismo cliente son inofensivos: el primero en confirmarse invalida el resto (la tarjeta deja de estar completa).
 - **Verificación:** `eslint` OK, `tsc` OK, `vitest` 31/31 OK (5 nuevas de canje), `next build` OK (rutas `/api/redemptions/*`, `/dashboard/canjear`).
 
+## 2026-10-14 — Gracia amplia en POST /api/visits/scan (fix 410 en alta con OTP)
+
+- **Qué:** el scan acepta QR de hasta 10 ventanas (~10 min) mientras `/v/[token]` sigue estricto (actual + anterior).
+- **Por qué:** el cliente abría el link válido y tardaba 1-4 min en nombre + teléfono + SMS + OTP; el POST llegaba con el token vencido y devolvía 410 "ya se renovó".
+- **Archivos:**
+  - `src/domain/qr-token.ts` — `verifyQrToken(..., graceWindows = 1)`
+  - `src/lib/server/qr.ts` — `verifyCafeQrToken(token, now, graceWindows)`
+  - `src/app/api/visits/scan/route.ts` — `SCAN_QR_GRACE_WINDOWS = 10`
+  - `src/app/v/[token]/visit-flow.tsx` — mensaje de expirado pide re-escanear el QR actual
+  - `src/app/(app)/dashboard/qr/qr-display.tsx` — aviso de que el link copiado vence en <1 min
+  - `src/domain/qr-token.test.ts` — test de gracia amplia
+- **Decisiones:**
+  - La foto del QR sirve hasta 10 min, pero el antifraude (1 sello/día, 240 min entre sellos) bloquea el abuso. Se prioriza conversión en el alta.
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 32/32 OK, `next build` OK.
+
 ---
 
 ## Cómo agregar una entrada nueva

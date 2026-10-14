@@ -68,16 +68,6 @@ export async function POST(request: Request) {
   }
   if (!verification.valid) {
     if (verification.reason === "expired") {
-      try {
-        const parts = qrToken.split(".");
-        const tokenWindow = Number(parts[2]);
-        const currentWindow = Math.floor(now.getTime() / 1000 / 60);
-        console.error(
-          `[api/visits/scan] QR expirado tokenWindow=${parts[2]} currentWindow=${currentWindow} diff=${currentWindow - tokenWindow} cafe=${parts[0]} loc=${parts[1]}`,
-        );
-      } catch {
-        console.error("[api/visits/scan] QR expirado (token ilegible)");
-      }
       return NextResponse.json(
         {
           error: "Este código ya se renovó. Escaneá de nuevo el QR del mostrador.",

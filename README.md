@@ -119,17 +119,19 @@ cafes/{cafeId}                                name, slug, plan, timezone, settin
 - [x] Reglas de sellos y QR rotativo con tests (18 pruebas)
 - [x] QR del mostrador (`/dashboard/qr` + `/api/cafe/qr`, auto-renovación e imprimible)
 - [x] PWA del cliente (`/v/[token]`): alta con teléfono + OTP y tarjeta de sellos
+- [x] Portal `/tarjeta`: todas las tarjetas del teléfono con canje y sellos extra, sin re-escanear (paso previo a Wallet)
 - [x] Registro de visita en el servidor (`POST /api/visits/scan`, antifraude e idempotencia)
 - [x] Ficha de cliente (`/dashboard/clientes`): búsqueda, pedido, gustos, notas y visitas
 - [x] Canje de premios (código temporal de 2 min + confirmación del staff en `/dashboard/canjear`)
 - [x] Reglas de seguridad de Firestore (incluye `redemptions`)
 - [x] Motor de oportunidades (`/dashboard/oportunidades`): ausencias, premio cercano y cumpleaños, con mensaje listo para copiar (modo Esencial)
 - [x] Sellos extra (`/dashboard/aprobar`): reseña +2 / historia +1 con aprobación del staff y cooldown de 30 días
+- [x] Configuración de la promo (`/dashboard/programa`): sellos, premio y antifraude con ajuste automático de tarjetas
 - [ ] Probar reglas de Firestore con `@firebase/rules-unit-testing` (requiere emuladores)
 
 ## Próximo sprint
 
-1. Envío por WhatsApp en un toque (plantillas + opt-in + estados).
+1. Envío automático por WhatsApp Cloud API (plantillas + estados) — hoy es con un clic vía `wa.me`.
 2. Facturación con Mercado Pago.
 
 ## Notas

@@ -12,6 +12,12 @@ export const metadata: Metadata = {
   },
   description:
     "Conocé mejor a tus clientes y dales razones para volver. Fidelización para cafeterías.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Cafelink",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {

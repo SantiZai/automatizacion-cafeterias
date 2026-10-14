@@ -86,3 +86,16 @@ export function dayKey(date: Date, timeZone: string): string {
     day: "2-digit",
   }).format(date);
 }
+
+/**
+ * Ajusta una tarjeta cuando cambia el requerido de la promo.
+ * Si el cliente supera el nuevo tope, queda en el tope (lista para canjear);
+ * si no, mantiene los que tenía.
+ */
+export function adjustStampsToRequirement(
+  prevStamps: number,
+  newRequired: number,
+): { stamps: number; complete: boolean } {
+  const stamps = Math.min(Math.max(0, Math.floor(prevStamps)), newRequired);
+  return { stamps, complete: stamps >= newRequired };
+}

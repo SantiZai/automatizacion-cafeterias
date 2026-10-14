@@ -79,8 +79,7 @@ export function detectBirthday(input: {
   return today.slice(5) === monthDay;
 }
 
-export function buildOpportunityMessage(input: {
-  kind: OpportunityKind;
+export function buildOpportunityMessage(input: {  kind: OpportunityKind;
   customerName: string;
   cafeName: string;
   rewardName?: string;
@@ -107,4 +106,19 @@ export function buildOpportunityMessage(input: {
         `Pasá a festejar que te espera algo rico.`
       );
   }
+}
+
+/**
+ * Link click-to-chat de WhatsApp con el mensaje precargado.
+ * Sin API de Meta: abre el chat del cliente listo para enviar con un toque.
+ * Devuelve null si el teléfono no sirve para wa.me.
+ */
+export function whatsappLinkFor(
+  phoneE164: string | null | undefined,
+  message: string,
+): string | null {
+  if (!phoneE164) return null;
+  const digits = phoneE164.replace(/\D/g, "");
+  if (digits.length < 8 || digits.length > 15) return null;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }

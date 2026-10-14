@@ -155,6 +155,60 @@
 - **Archivos:** `src/app/v/[token]/visit-flow.tsx`.
 - **Verificación:** `eslint` OK, `tsc` OK, `vitest` 44/44 OK, `next build` OK.
 
+## 2026-10-14 — Ver tarjeta y canjear sin re-escanear (modo QR vencido)
+
+- **Qué:** un link `/v/[token]` vencido pero con firma válida abre modo lectura: con sesión de teléfono muestra "Ver mis sellos" (tarjeta, sellos extra y código de canje sin sumar); sin sesión pide nombre + OTP y muestra la tarjeta.
+- **Por qué:** quien ya sumó hoy no tenía dónde ver su progreso ni generar el canje sin escanear otro QR.
+- **Archivos:**
+  - `src/domain/qr-token.ts` + `qr-token.test.ts` — `extractQrPayload()` (solo firma, sin vigencia)
+  - `src/lib/server/qr.ts` — `extractCafeQrPayload()`
+  - `src/app/api/cards/mine/route.ts` (nuevo) — tarjeta por `cafeId` + `idToken`, sin consumir sellos
+  - `src/app/v/[token]/page.tsx` — el vencido con firma válida monta `VisitFlow` con `qrExpired`
+  - `src/app/v/[token]/visit-flow.tsx` — modo `qrExpired`: sin auto-scan, `fetchCard`, título "Mis sellos"
+- **Decisiones:**
+  - Tokens truchos o de otro secreto siguen rechazados; solo cambia el vencido legítimo.
+  - El canje ya pedía solo `cafeId` + `idToken`, así que no hubo que tocarlo.
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 50/50 OK, `next build` OK (ruta `/api/cards/mine`).
+
+## 2026-10-14 — Portal persistente `/tarjeta` (reemplaza modo QR vencido)
+
+- **Qué:** el cliente entra a `/tarjeta`, verifica su teléfono una vez y ve todas sus tarjetas (todos sus cafés) con canje y sellos extra, sin re-escanear. El link `/v/` vencido vuelve a ser pantalla simple con botón "Abrir mi tarjeta".
+- **Por qué:** se descartó el modo lectura en el link vencido; lo correcto es una tarjeta persistente en el celu (paso previo a Wallet de Apple/Google).
+- **Archivos:**
+  - `src/app/api/cards/list/route.ts` (nuevo) — tarjetas por `personUid` con `collectionGroup("customers")`
+  - `src/app/tarjeta/page.tsx` + `tarjeta-client.tsx` (nuevos) — OTP, lista de tarjetas, canje con sondeo y sellos extra por tarjeta
+  - `src/app/v/[token]/page.tsx` + `visit-flow.tsx` — revert del modo `qrExpired`
+  - `src/app/api/cards/mine/route.ts` (eliminado, lo cubre `list`)
+  - `public/manifest.webmanifest` + `src/app/layout.tsx` — manifiesto (`start_url: /tarjeta`) y `appleWebApp` para "Agregar a inicio"
+  - `firestore.indexes.json` — índice de grupo `customers(personUid)`
+  - `src/domain/qr-token.ts` — queda `extractQrPayload()` testeado como utilidad (firma sin vigencia)
+- **Decisiones:**
+  - Sin íconos todavía (falta marca): el manifiesto permite agregar a inicio manual, el prompt automático de Chrome llega con los íconos.
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 50/50 OK, `next build` OK (rutas `/tarjeta`, `/api/cards/list`).
+
+## 2026-10-14 — Configuración de la promo desde la UI (`/dashboard/programa`)
+
+- **Qué:** el local edita sellos necesarios (4-15), premio, minutos entre sellos y tope diario. Al guardar se actualiza el programa y se ajustan las tarjetas: quien supera el nuevo tope queda en el tope (lista para canjear), el resto mantiene sus sellos, y si al subir el requerido una tarjeta deja de estar completa se limpia su completado.
+- **Archivos:**
+  - `src/domain/stamps.ts` + `stamps.test.ts` — `adjustStampsToRequirement()` puro y testeado
+  - `src/lib/data/programs.ts` — `updateProgram()` (programa + barrido de tarjetas por café con batch)
+  - `src/app/(app)/dashboard/programa/page.tsx` + `actions.ts` + `program-form.tsx` (nuevos)
+  - `src/app/(app)/dashboard/page.tsx` — acceso a Promo de sellos
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 48/48 OK, `next build` OK (ruta `/dashboard/programa`).
+
+## 2026-10-14 — WhatsApp con un clic en oportunidades (sin API de Meta)
+
+- **Qué:** botón WhatsApp en cada oportunidad que abre `wa.me/{tel}?text={mensaje}` con el chat y el texto listos para enviar. Quedan Copiar (respaldo), Marcar enviado y Descartar.
+- **Por qué:** el dueño lo pidió sin integración de API: un clic abre el chat y manda desde su propio WhatsApp.
+- **Archivos:**
+  - `src/domain/opportunities.ts` + `opportunities.test.ts` — `whatsappLinkFor()` puro y testeado
+  - `src/lib/data/opportunities.ts` — la oportunidad guarda `phoneE164` y `marketingOptIn`; aviso si no hay opt-in
+  - `src/app/(app)/dashboard/oportunidades/page.tsx` — botón WhatsApp (nueva pestaña) solo si hay teléfono válido
+- **Decisiones:**
+  - Sin plantillas ni estados de entrega (eso requeriría Cloud API). El envío queda en manos del dueño y su WhatsApp.
+  - Las oportunidades viejas (sin teléfono) muestran solo Copiar.
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 45/45 OK, `next build` OK.
+
 ---
 
 ## Cómo agregar una entrada nueva

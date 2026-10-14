@@ -1,0 +1,11 @@
+{
+  "name": "Cafelink · Mis tarjetas",
+  "short_name": "Cafelink",
+  "description": "Tus sellos de tus cafés, siempre con vos.",
+  "start_url": "/tarjeta",
+  "scope": "/",
+  "display": "standalone",
+  "lang": "es",
+  "background_color": "#FBF7F2",
+  "theme_color": "#6f4a2f"
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   DEFAULT_STAMP_RULES,
+  adjustStampsToRequirement,
   cardProgress,
   dayKey,
   evaluateStampAttempt,
@@ -78,6 +79,29 @@ describe("cardProgress", () => {
 
   it("ignora valores negativos", () => {
     expect(cardProgress(-3, 8).stamps).toBe(0);
+  });
+});
+
+describe("adjustStampsToRequirement", () => {
+  it("fija en el tope al que supera el nuevo requerido", () => {
+    expect(adjustStampsToRequirement(9, 6)).toEqual({
+      stamps: 6,
+      complete: true,
+    });
+  });
+
+  it("mantiene los que tenía si no llega al tope", () => {
+    expect(adjustStampsToRequirement(4, 8)).toEqual({
+      stamps: 4,
+      complete: false,
+    });
+  });
+
+  it("con subir el requerido nadie pierde sellos", () => {
+    expect(adjustStampsToRequirement(8, 10)).toEqual({
+      stamps: 8,
+      complete: false,
+    });
   });
 });
 

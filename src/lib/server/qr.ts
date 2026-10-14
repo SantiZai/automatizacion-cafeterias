@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createQrToken, QR_TTL_SECONDS, verifyQrToken } from "@/domain/qr-token";
+import { createQrToken, QR_TTL_SECONDS, verifyQrToken, extractQrPayload } from "@/domain/qr-token";
 
 /** Origen público para los QR. Permite probar desde el celular con una URL de LAN/túnel. */
 export function appOrigin(fallbackOrigin: string): string {
@@ -15,6 +15,11 @@ export function verifyCafeQrToken(
   graceWindows: number = 1,
 ): ReturnType<typeof verifyQrToken> {
   return verifyQrToken(token, getQrSigningSecret(), now, QR_TTL_SECONDS, graceWindows);
+}
+
+/** Café y local de un QR aunque esté vencido (solo si la firma es válida). */
+export function extractCafeQrPayload(token: string) {
+  return extractQrPayload(token, getQrSigningSecret());
 }
 
 function getQrSigningSecret(): string {

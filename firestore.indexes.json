@@ -33,6 +33,11 @@
       ]
     },
     {
+      "collectionGroup": "customers",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [{ "fieldPath": "personUid", "order": "ASCENDING" }]
+    },
+    {
       "collectionGroup": "claims",
       "queryScope": "COLLECTION",
       "fields": [

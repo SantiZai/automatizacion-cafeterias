@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
 import { getUserCafe } from "@/lib/data/cafes";
+import { whatsappLinkFor } from "@/domain/opportunities";
 import { listOpportunities } from "@/lib/data/opportunities";
 import {
   dismissOpportunityAction,
@@ -97,15 +98,35 @@ export default async function OpportunitiesPage() {
                     {opp.kind === "near_reward" && opp.remaining != null
                       ? `Le faltan ${opp.remaining} sellos · `
                       : null}
-                    Tocá Copiar y mandalo por WhatsApp a mano. Después marcalo
-                    como enviado.
+                    Tocá WhatsApp y se abre el chat con el mensaje listo para
+                    enviar. Después marcalo como enviado.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
                   <p className="rounded-xl bg-muted p-4 text-[15px] leading-relaxed">
                     “{opp.message}”
                   </p>
+                  {!opp.marketingOptIn ? (
+                    <p className="text-xs text-muted-foreground">
+                      Sin opt-in de WhatsApp: mandalo solo si el cliente te lo
+                      pidió, o mejor por otro canal.
+                    </p>
+                  ) : null}
                   <div className="flex flex-wrap gap-2">
+                    {(() => {
+                      const waLink = whatsappLinkFor(opp.phoneE164, opp.message);
+                      return waLink ? (
+                        <Button asChild size="sm">
+                          <a
+                            href={waLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            WhatsApp
+                          </a>
+                        </Button>
+                      ) : null;
+                    })()}
                     <CopyMessageButton message={opp.message} />
                     <form action={markOpportunitySentAction.bind(null, opp.id)}>
                       <Button type="submit" size="sm">

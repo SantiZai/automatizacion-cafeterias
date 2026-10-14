@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { QR_TTL_SECONDS, createQrToken, verifyQrToken } from "./qr-token";
+import { QR_TTL_SECONDS, createQrToken, extractQrPayload, verifyQrToken } from "./qr-token";
 
 const secret = "x".repeat(40);
 const payload = { cafeId: "cafe123", locationId: "loc456" };
@@ -81,5 +81,19 @@ describe("QR rotativo", () => {
 
   it("exige un secreto largo", () => {
     expect(() => createQrToken(payload, "corto", t0)).toThrow();
+  });
+
+  it("extrae el payload de un token vencido si la firma es válida", () => {
+    const token = createQrToken(payload, secret, t0);
+    const expiredAt = new Date(t0.getTime() + QR_TTL_SECONDS * 60 * 1000);
+    expect(verifyQrToken(token, secret, expiredAt).valid).toBe(false);
+    expect(extractQrPayload(token, secret)).toEqual(payload);
+  });
+
+  it("no extrae nada si la firma es trucha", () => {
+    const token = createQrToken(payload, secret, t0);
+    const tampered = token.slice(0, -2) + (token.endsWith("aa") ? "bb" : "aa");
+    expect(extractQrPayload(tampered, secret)).toBeNull();
+    expect(extractQrPayload("hola", secret)).toBeNull();
   });
 });

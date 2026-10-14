@@ -6,6 +6,7 @@ import {
   detectBirthday,
   detectNearReward,
   opportunityDocId,
+  whatsappLinkFor,
 } from "./opportunities";
 
 const now = new Date("2026-10-14T15:00:00Z");
@@ -110,5 +111,13 @@ describe("oportunidades", () => {
     expect(opportunityDocId("c1", "absence", "2026-10-14")).toBe(
       "c1_absence_2026-10-14",
     );
+  });
+
+  it("arma el link de WhatsApp con el mensaje precargado", () => {
+    expect(whatsappLinkFor("+54 9 11 1234-5678", "Hola, Lucía")).toBe(
+      "https://wa.me/5491112345678?text=Hola%2C%20Luc%C3%ADa",
+    );
+    expect(whatsappLinkFor(null, "Hola")).toBeNull();
+    expect(whatsappLinkFor("abc", "Hola")).toBeNull();
   });
 });

@@ -82,3 +82,29 @@ export function verifyQrToken(
 
   return { valid: true, cafeId, locationId };
 }
+
+/**
+ * Extrae café y local de un token verificando SOLO la firma (sin vigencia).
+ * Sirve para mostrar la tarjeta en modo lectura con un QR ya vencido:
+ * los datos del cliente igual exigen su sesión de teléfono.
+ */
+export function extractQrPayload(
+  token: string,
+  secret: string,
+): QrPayload | null {
+  assertSecret(secret);
+  const parts = token.split(".");
+  if (parts.length !== 4) return null;
+  const [cafeId, locationId, windowRaw, signature] = parts;
+  if (!ID_PATTERN.test(cafeId) || !ID_PATTERN.test(locationId)) return null;
+  if (!/^\d{1,12}$/.test(windowRaw)) return null;
+
+  const expected = Buffer.from(
+    sign(secret, { cafeId, locationId }, Number(windowRaw)),
+  );
+  const received = Buffer.from(signature);
+  if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+    return null;
+  }
+  return { cafeId, locationId };
+}

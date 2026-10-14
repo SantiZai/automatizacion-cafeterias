@@ -20,6 +20,8 @@ export type Opportunity = {
   id: string;
   customerId: string;
   displayName: string;
+  phoneE164: string | null;
+  marketingOptIn: boolean;
   kind: OpportunityKind;
   status: OpportunityStatus;
   message: string;
@@ -65,6 +67,8 @@ export async function listOpportunities(
       id: doc.id,
       customerId: (data.customerId as string) ?? "",
       displayName: (data.displayName as string) ?? "Cliente",
+      phoneE164: (data.phoneE164 as string | null) ?? null,
+      marketingOptIn: Boolean(data.marketingOptIn),
       kind: (data.kind as OpportunityKind) ?? "absence",
       status: (data.status as OpportunityStatus) ?? "open",
       message: (data.message as string) ?? "",
@@ -121,6 +125,8 @@ export async function evaluateOpportunities(
   for (const customerDoc of customersSnap.docs) {
     const customer = customerDoc.data() as Record<string, unknown>;
     const displayName = (customer.displayName as string) ?? "Cliente";
+    const phoneE164 = (customer.phoneE164 as string | null) ?? null;
+    const marketingOptIn = Boolean(customer.marketingOptIn);
     const lastVisitAt = dateOrNull(customer.lastVisitAt);
     const visitCount = (customer.visitCount as number) ?? 0;
     const birthday =
@@ -213,6 +219,8 @@ export async function evaluateOpportunities(
       await ref.create({
         customerId: customerDoc.id,
         displayName,
+        phoneE164,
+        marketingOptIn,
         kind: candidate.kind,
         status: "open",
         message: candidate.message,

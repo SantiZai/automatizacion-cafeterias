@@ -75,12 +75,17 @@ export default async function VisitPage({
             </CardTitle>
             <CardDescription className="text-base">
               {expired
-                ? "El QR del mostrador cambia cada 60 segundos. Escaneá de nuevo el código que está en pantalla."
+                ? "El QR del mostrador cambia cada 60 segundos. Escaneá de nuevo el código que está en pantalla. Tus sellos están a salvo en tu tarjeta."
                 : "Escaneá el QR del mostrador con la cámara de tu celular para sumar sellos."}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-3">
-            <Button asChild size="lg">
+            {expired ? (
+              <Button asChild size="lg" variant="outline">
+                <Link href="/tarjeta">Abrir mi tarjeta</Link>
+              </Button>
+            ) : null}
+            <Button asChild size="lg" variant={expired ? "ghost" : "default"}>
               <Link href="/">Volver al inicio</Link>
             </Button>
           </CardContent>

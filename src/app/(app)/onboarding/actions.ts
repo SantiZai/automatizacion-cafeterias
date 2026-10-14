@@ -5,6 +5,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { z } from "zod";
 
 import { requireSession } from "@/lib/auth/session";
+import { isAdminEmail } from "@/lib/auth/admin";
 import { adminDb } from "@/lib/firebase/admin";
 import { DEFAULT_STAMP_RULES } from "@/domain/stamps";
 import type { OnboardingState } from "./state";
@@ -42,6 +43,9 @@ export async function createCafeAction(
   formData: FormData,
 ): Promise<OnboardingState> {
   const session = await requireSession();
+  if (!isAdminEmail(session.email)) {
+    return { error: "Solo el administrador puede crear cafés." };
+  }
 
   const parsed = schema.safeParse({
     name: formData.get("name"),

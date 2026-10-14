@@ -20,6 +20,16 @@ export async function POST(request: Request) {
     const auth = adminAuth();
     const decoded = await auth.verifyIdToken(parsed.data.idToken);
 
+    // El panel es solo para cuentas del equipo (email + contraseña creadas
+    // por el administrador). Los clientes entran con teléfono a /v y /tarjeta
+    // sin cookie: si aceptáramos su token acá, podrían abrir /dashboard y
+    // hasta crear un café en /onboarding.
+    const provider = (decoded.firebase as { sign_in_provider?: string } | undefined)
+      ?.sign_in_provider;
+    if (provider !== "password") {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
     // Solo se canjea un token de un inicio de sesión reciente (últimos 5 minutos)
     const secondsSinceSignIn = Date.now() / 1000 - decoded.auth_time;
     if (secondsSinceSignIn > 5 * 60) {

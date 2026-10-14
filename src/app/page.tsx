@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { BellRing, NotebookPen, QrCode } from "lucide-react";
 
 import { Logo } from "@/components/brand/logo";
@@ -9,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getSession } from "@/lib/auth/session";
 
 const features = [
   {
@@ -28,7 +30,10 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  // La landing es solo sin sesión: con sesión vas al panel.
+  if (await getSession()) redirect("/dashboard");
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-5">

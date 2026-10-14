@@ -186,6 +186,33 @@
   - Sin íconos todavía (falta marca): el manifiesto permite agregar a inicio manual, el prompt automático de Chrome llega con los íconos.
 - **Verificación:** `eslint` OK, `tsc` OK, `vitest` 50/50 OK, `next build` OK (rutas `/tarjeta`, `/api/cards/list`).
 
+## 2026-10-14 — Sesión del panel solo con Google (cierra entrada a clientes)
+
+- **Qué:** `POST /api/auth/session` rechaza (403) todo token que no sea `sign_in_provider === "google.com"`.
+- **Por qué:** aceptaba cualquier token válido, incluido el de teléfono: un cliente podía pedir cookie de sesión, pasar el proxy y llegar a `/onboarding` a crear un café. El resto ya estaba cubierto (sin cookie el proxy manda a `/login`; las reglas de Firestore niegan a no-miembros).
+- **Archivos:** `src/app/api/auth/session/route.ts`.
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 50/50 OK, `next build` OK.
+
+## 2026-10-14 — Cuentas solo del administrador (email + contraseña, sin registro público)
+
+- **Qué:** login con mail y contraseña; la sesión solo acepta proveedor `password`; panel `/admin` (solo `ADMIN_EMAILS`) para crear café + cuenta o agregar cuenta a café existente; `/onboarding` avisa en vez de crear; página `/dashboard/cuenta` para cambiar la contraseña.
+- **Por qué:** nadie puede auto-registrarse; cada local tiene su única cuenta (sirve en varias pantallas a la vez, cada una con su propia cookie de sesión).
+- **Archivos:**
+  - `src/components/auth/email-sign-in-form.tsx` (nuevo) + `src/app/login/page.tsx` — login por mail
+  - `src/components/auth/google-sign-in-button.tsx` (eliminado)
+  - `src/app/api/auth/session/route.ts` — solo `password`, Google da 403
+  - `src/lib/auth/admin.ts` (nuevo) — `requireAdmin()` por `ADMIN_EMAILS`
+  - `src/app/(app)/admin/page.tsx` + `actions.ts` + `admin-forms.tsx` (nuevos)
+  - `src/lib/data/cafes.ts` — `listCafes()` para el admin
+  - `src/app/(app)/onboarding/page.tsx` + `actions.ts` — solo avisa / solo admin
+  - `src/app/(app)/dashboard/cuenta/page.tsx` + `password-form.tsx` (nuevos)
+  - `src/proxy.ts` — cubre `/admin/:path*`
+  - `.env.example` — `ADMIN_EMAILS` y cómo crear la primera cuenta
+- **Decisiones:**
+  - Si el mail ya existe al crear, se vincula sin cambiar la contraseña.
+  - La primera cuenta del admin se crea a mano en Authentication (consola o emulador).
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 50/50 OK, `next build` OK (rutas `/admin`, `/dashboard/cuenta`).
+
 ## 2026-10-14 — Configuración de la promo desde la UI (`/dashboard/programa`)
 
 - **Qué:** el local edita sellos necesarios (4-15), premio, minutos entre sellos y tope diario. Al guardar se actualiza el programa y se ajustan las tarjetas: quien supera el nuevo tope queda en el tope (lista para canjear), el resto mantiene sus sellos, y si al subir el requerido una tarjeta deja de estar completa se limpia su completado.

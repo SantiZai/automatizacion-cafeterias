@@ -34,7 +34,7 @@ npm run emulators
 npm run dev
 ```
 
-Entrá a `http://localhost:3000`, tocá **Empezar gratis** y elegí **Continuar con Google**. El emulador de Auth abre una ventana donde podés crear una cuenta de prueba al instante. Después creá tu café desde el onboarding y vas a llegar al dashboard.
+Entrá a `http://localhost:3000/login`. No hay registro público: la primera cuenta la creás vos en Authentication (consola o emulador en `http://localhost:4000/auth`, método Email/Contraseña) con un mail de `ADMIN_EMAILS`. Después creá cafés y cuentas desde `/admin`.
 
 Los datos de los emuladores se guardan en `.emulator-data/` al cerrar (`--export-on-exit`).
 
@@ -56,10 +56,11 @@ Los datos de los emuladores se guardan en `.emulator-data/` al cerrar (`--export
 src/
 ├─ app/
 │  ├─ page.tsx                  Landing
-│  ├─ login/                    Ingreso con Google
+│  ├─ login/                    Ingreso con mail y contraseña
 │  ├─ (app)/                    Zona autenticada (layout con sesión obligatoria)
-│  │  ├─ onboarding/            Alta del café (Server Action)
-│  │  └─ dashboard/             Inicio del café
+│  │  ├─ admin/                  Alta de cafés y cuentas (solo administrador)
+│  │  ├─ onboarding/            Aviso (el alta la hace el administrador)
+│  │  └─ dashboard/             Inicio del café (cuenta, programa, QR, etc.)
 │  └─ api/auth/session/         Crea y borra la cookie de sesión
 ├─ components/
 │  ├─ ui/                       Componentes base (estilo shadcn/ui)
@@ -77,10 +78,11 @@ src/
 
 ## Cómo funciona la autenticación
 
-1. El navegador inicia sesión con Google (Firebase Auth) y obtiene un ID token.
-2. `POST /api/auth/session` verifica el token con el Admin SDK y devuelve una **cookie de sesión** `HttpOnly` de 5 días.
-3. Las páginas del servidor llaman a `requireSession()`, que verifica la cookie (incluida la revocación) en cada solicitud.
+1. El navegador inicia sesión con mail y contraseña (Firebase Auth, cuentas creadas por el administrador) y obtiene un ID token.
+2. `POST /api/auth/session` verifica el token y que sea del proveedor `password` (Google y teléfono dan 403) y devuelve una **cookie de sesión** `HttpOnly` de 5 días.
+3. Las páginas del servidor llaman a `requireSession()`, que verifica la cookie (incluida la revocación) en cada solicitud. Cada pantalla donde se entra genera su propia cookie: la misma cuenta sirve en varias a la vez.
 4. `src/proxy.ts` solo comprueba que exista la cookie y redirige a `/login`; la verificación real está en el servidor.
+5. Los clientes entran con teléfono a `/v` y `/tarjeta` sin cookie, con su token por pedido.
 
 ## Modelo de datos (Firestore)
 
@@ -104,7 +106,7 @@ cafes/{cafeId}                                name, slug, plan, timezone, settin
 ## Pasar a un proyecto real de Firebase
 
 1. Crear el proyecto en la [consola de Firebase](https://console.firebase.google.com) y **Firestore** en modo producción, región `southamerica-east1` (São Paulo).
-2. En **Authentication > Sign-in method**, habilitar **Google**. En **Settings > Authorized domains**, agregar tu dominio.
+2. En **Authentication > Sign-in method**, habilitar **Email/Contraseña** y **Teléfono**. En **Settings > Authorized domains**, agregar tu dominio.
 3. En **Configuración del proyecto > Tus apps**, registrar una app web y copiar la configuración a `NEXT_PUBLIC_FIREBASE_*`.
 4. En **Cuentas de servicio**, generar una clave privada y completar `FIREBASE_ADMIN_CLIENT_EMAIL` y `FIREBASE_ADMIN_PRIVATE_KEY`.
 5. Poner `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=false` y borrar `FIRESTORE_EMULATOR_HOST` y `FIREBASE_AUTH_EMULATOR_HOST`.
@@ -114,8 +116,8 @@ cafes/{cafeId}                                name, slug, plan, timezone, settin
 ## Estado actual
 
 - [x] Base del proyecto, tema de café y componentes de UI
-- [x] Login con Google, cookie de sesión y rutas protegidas
-- [x] Alta de café (café, miembro dueño, local, programa de sellos)
+- [x] Login con mail y contraseña, cookie de sesión y rutas protegidas (sin registro público, cuentas del administrador)
+- [x] Alta de café y cuentas desde `/admin` (café, miembro dueño, local, programa de sellos)
 - [x] Reglas de sellos y QR rotativo con tests (18 pruebas)
 - [x] QR del mostrador (`/dashboard/qr` + `/api/cafe/qr`, auto-renovación e imprimible)
 - [x] PWA del cliente (`/v/[token]`): alta con teléfono + OTP y tarjeta de sellos

@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
+import { isAdminEmail } from "@/lib/auth/admin";
 import { getUserCafe } from "@/lib/data/cafes";
 import { getDashboardStats } from "@/lib/data/customers";
 import { countOpenOpportunities } from "@/lib/data/opportunities";
@@ -25,6 +26,7 @@ export default async function DashboardPage() {
 
   const statsData = await getDashboardStats(cafe.id, cafe.timezone);
   const openOpportunities = await countOpenOpportunities(cafe.id);
+  const showAdmin = isAdminEmail(session.email);
   const stats = [
     { label: "Visitas hoy", value: String(statsData.visitsToday) },
     { label: "Clientes activos", value: String(statsData.activeCustomers) },
@@ -121,6 +123,26 @@ export default async function DashboardPage() {
             Sellos, premio y antifraude
           </span>
         </Link>
+        <Link
+          href="/dashboard/cuenta"
+          className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"
+        >
+          Mi cuenta
+          <span className="block text-sm font-normal text-muted-foreground">
+            Cambiar contraseña
+          </span>
+        </Link>
+        {showAdmin ? (
+          <Link
+            href="/admin"
+            className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"
+          >
+            Administración
+            <span className="block text-sm font-normal text-muted-foreground">
+              Cafés y cuentas
+            </span>
+          </Link>
+        ) : null}
       </section>
 
       <Card>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { EmailSignInForm } from "@/components/auth/email-sign-in-form";
 import { Logo } from "@/components/brand/logo";
 import {
   Card,
@@ -32,15 +32,12 @@ export default async function LoginPage({
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Ingresá a tu cafetería</CardTitle>
           <CardDescription>
-            Usá tu cuenta de Google para entrar o crear tu cuenta.
+            Usá la cuenta que te dio el administrador. Si todavía no tenés una,
+            pedila por WhatsApp.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <GoogleSignInButton next={next} />
-          <p className="text-center text-xs text-muted-foreground">
-            Al continuar aceptás los términos del servicio y la política de
-            privacidad.
-          </p>
+          <EmailSignInForm next={next} />
         </CardContent>
       </Card>
     </main>

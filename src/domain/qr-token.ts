@@ -53,6 +53,7 @@ export function verifyQrToken(
   secret: string,
   now: Date = new Date(),
   ttlSeconds: number = QR_TTL_SECONDS,
+  graceWindows: number = 1,
 ): QrVerification {
   assertSecret(secret);
 
@@ -75,7 +76,7 @@ export function verifyQrToken(
     return { valid: false, reason: "bad_signature" };
   }
 
-  if (window > current || window < current - 1) {
+  if (window > current || window < current - graceWindows) {
     return { valid: false, reason: "expired" };
   }
 

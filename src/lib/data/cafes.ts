@@ -10,6 +10,23 @@ export type CafeSummary = {
   timezone: string;
 };
 
+export type CafeLocation = {
+  id: string;
+  name: string;
+};
+
+/** Lista los locales del café, ordenados por fecha de creación. */
+export async function getCafeLocations(cafeId: string): Promise<CafeLocation[]> {
+  const db = adminDb();
+  const snap = await db
+    .collection(`cafes/${cafeId}/locations`)
+    .orderBy("createdAt", "asc")
+    .get();
+  return snap.docs.map((doc) => ({
+    id: doc.id,
+    name: (doc.data().name as string) ?? "Local",
+  }));
+}
 /** Devuelve el café principal del usuario, o null si todavía no creó uno. */
 export async function getUserCafe(uid: string): Promise<CafeSummary | null> {
   const db = adminDb();

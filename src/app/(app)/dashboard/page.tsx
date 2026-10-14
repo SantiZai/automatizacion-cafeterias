@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CheckCircle2, Circle } from "lucide-react";
 
@@ -12,26 +13,30 @@ import {
 } from "@/components/ui/card";
 import { requireSession } from "@/lib/auth/session";
 import { getUserCafe } from "@/lib/data/cafes";
+import { getDashboardStats } from "@/lib/data/customers";
 
 export const metadata: Metadata = { title: "Inicio" };
-
-const stats = [
-  { label: "Visitas hoy", value: "0" },
-  { label: "Clientes activos", value: "0" },
-  { label: "Oportunidades", value: "0" },
-];
-
-const steps = [
-  { label: "Creaste tu café y tu tarjeta de sellos", done: true },
-  { label: "Imprimí el QR del mostrador", done: false },
-  { label: "Hacé una visita de prueba con tu celular", done: false },
-  { label: "Invitá a tu equipo", done: false },
-];
 
 export default async function DashboardPage() {
   const session = await requireSession();
   const cafe = await getUserCafe(session.uid);
   if (!cafe) redirect("/onboarding");
+
+  const statsData = await getDashboardStats(cafe.id, cafe.timezone);
+  const stats = [
+    { label: "Visitas hoy", value: String(statsData.visitsToday) },
+    { label: "Clientes activos", value: String(statsData.activeCustomers) },
+    { label: "Oportunidades", value: "0" },
+  ];
+  const hasVisit = statsData.totalVisits > 0;
+  const steps = [
+    { label: "Creaste tu café y tu tarjeta de sellos", done: true, href: null as string | null },
+    { label: "Mostrá el QR del mostrador", done: false, href: "/dashboard/qr" as string | null },
+    hasVisit
+      ? { label: "Sumaste tu primera visita", done: true, href: null as string | null }
+      : { label: "Hacé una visita de prueba con tu celular", done: false, href: "/dashboard/qr" as string | null },
+    { label: "Conocé a tus clientes", done: false, href: (hasVisit ? "/dashboard/clientes" : null) as string | null },
+  ];
 
   const firstName = session.name?.split(" ")[0];
 
@@ -57,6 +62,36 @@ export default async function DashboardPage() {
         ))}
       </section>
 
+      <section aria-label="Accesos" className="grid gap-4 sm:grid-cols-3">
+        <Link
+          href="/dashboard/qr"
+          className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"
+        >
+          QR del mostrador
+          <span className="block text-sm font-normal text-muted-foreground">
+            Para la tablet o para imprimir
+          </span>
+        </Link>
+        <Link
+          href="/dashboard/clientes"
+          className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"
+        >
+          Clientes
+          <span className="block text-sm font-normal text-muted-foreground">
+            Fichas, gustos y notas
+          </span>
+        </Link>
+        <Link
+          href="/dashboard/canjear"
+          className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"
+        >
+          Canjear premio
+          <span className="block text-sm font-normal text-muted-foreground">
+            Validá el código del cliente
+          </span>
+        </Link>
+      </section>
+
       <Card>
         <CardHeader>
           <CardTitle>Primeros pasos</CardTitle>
@@ -73,11 +108,24 @@ export default async function DashboardPage() {
                 ) : (
                   <Circle className="size-5 text-muted-foreground" aria-hidden="true" />
                 )}
-                <span className={step.done ? "text-muted-foreground line-through" : ""}>
-                  {step.label}
-                </span>
+                {step.href && !step.done ? (
+                  <Link
+                    href={step.href}
+                    className="font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    {step.label}
+                  </Link>
+                ) : (
+                  <span className={step.done ? "text-muted-foreground line-through" : ""}>
+                    {step.label}
+                  </span>
+                )}
                 {step.done ? (
                   <span className="sr-only">(completado)</span>
+                ) : step.href ? (
+                  <Badge variant="secondary" className="ml-auto">
+                    Ver ahora
+                  </Badge>
                 ) : (
                   <Badge variant="secondary" className="ml-auto">
                     Próximamente

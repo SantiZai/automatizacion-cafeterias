@@ -27,6 +27,15 @@ describe("QR rotativo", () => {
     });
   });
 
+  it("acepta ventanas viejas si se pide gracia amplia (flujo OTP del scan)", () => {
+    const token = createQrToken(payload, secret, t0);
+    const fiveMinLater = new Date(t0.getTime() + QR_TTL_SECONDS * 5 * 1000);
+    expect(verifyQrToken(token, secret, fiveMinLater).valid).toBe(false);
+    expect(
+      verifyQrToken(token, secret, fiveMinLater, QR_TTL_SECONDS, 10).valid,
+    ).toBe(true);
+  });
+
   it("rechaza un token de una ventana futura", () => {
     const future = new Date(t0.getTime() + QR_TTL_SECONDS * 5 * 1000);
     const token = createQrToken(payload, secret, future);

@@ -117,15 +117,19 @@ cafes/{cafeId}                                name, slug, plan, timezone, settin
 - [x] Login con Google, cookie de sesión y rutas protegidas
 - [x] Alta de café (café, miembro dueño, local, programa de sellos)
 - [x] Reglas de sellos y QR rotativo con tests (18 pruebas)
-- [x] Reglas de seguridad de Firestore
+- [x] QR del mostrador (`/dashboard/qr` + `/api/cafe/qr`, auto-renovación e imprimible)
+- [x] PWA del cliente (`/v/[token]`): alta con teléfono + OTP y tarjeta de sellos
+- [x] Registro de visita en el servidor (`POST /api/visits/scan`, antifraude e idempotencia)
+- [x] Ficha de cliente (`/dashboard/clientes`): búsqueda, pedido, gustos, notas y visitas
+- [x] Canje de premios (código temporal de 2 min + confirmación del staff en `/dashboard/canjear`)
+- [x] Reglas de seguridad de Firestore (incluye `redemptions`)
 - [ ] Probar reglas de Firestore con `@firebase/rules-unit-testing` (requiere emuladores)
 
 ## Próximo sprint
 
-1. QR rotativo del mostrador (pantalla para tablet y PDF imprimible).
-2. PWA del cliente: escaneo, verificación del teléfono (Firebase Phone Auth) y tarjeta de sellos.
-3. Registro de visita en el servidor aplicando `evaluateStampAttempt`.
-4. Ficha de cliente, notas y canje de premios.
+1. Motor de oportunidades (cumpleaños, ausencias, premio cercano) y bandeja del dueño.
+2. Sellos extra por reseña/historia con aprobación del staff.
+3. Mensajes por WhatsApp en un toque y facturación con Mercado Pago.
 
 ## Notas
 

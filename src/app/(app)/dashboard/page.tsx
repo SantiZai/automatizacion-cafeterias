@@ -103,6 +103,15 @@ export default async function DashboardPage() {
             Validá el código del cliente
           </span>
         </Link>
+        <Link
+          href="/dashboard/aprobar"
+          className="rounded-xl border bg-card p-4 font-medium outline-none transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/40"
+        >
+          Aprobar sellos
+          <span className="block text-sm font-normal text-muted-foreground">
+            Reseñas e historias pendientes
+          </span>
+        </Link>
       </section>
 
       <Card>

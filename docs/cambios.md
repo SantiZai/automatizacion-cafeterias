@@ -130,6 +130,31 @@
   - Cumpleaños solo si el cliente tiene `birthday` (ISO o MM-DD); todavía no hay UI para cargarlo.
 - **Verificación:** `eslint` OK, `tsc` OK, `vitest` 39/39 OK, `next build` OK (ruta `/dashboard/oportunidades`).
 
+## 2026-10-14 — Sellos extra por reseña/historia con aprobación (F5)
+
+- **Qué:** el cliente pide +2 por reseña en Google o +1 por historia desde su tarjeta; el staff aprueba o rechaza en `/dashboard/aprobar` con un toque y los sellos se suman topando en el requerido.
+- **Por qué:** incentiva reseñas e historias sin verificación automática (la aprobación del mostrador es la verificación).
+- **Archivos:**
+  - `src/domain/engagement.ts` + `engagement.test.ts` (nuevos) — premios, tope y cooldown de 30 días
+  - `src/app/api/claims/create/route.ts` (nuevo) — crea el reclamo con Phone Auth, idempotente por pendiente, 429 en cooldown
+  - `src/lib/data/claims.ts` (nuevo) — cola de pendientes, aprobación en transacción (reclamo + tarjeta atómicos)
+  - `src/app/(app)/dashboard/aprobar/page.tsx` + `actions.ts` (nuevos)
+  - `src/app/v/[token]/visit-flow.tsx` — sección "Sumá sellos extra" en la tarjeta
+  - `src/app/(app)/dashboard/page.tsx` — acceso a Aprobar sellos
+  - `firestore.rules` + `firestore.indexes.json` — lectura de `claims` para miembros e índices
+- **Decisiones:**
+  - El bonus NO toca `lastStampAt`/`stampsToday`: no bloquea la próxima visita.
+  - Un aprobado por tipo cada 30 días por cliente; si la tarjeta se completa con el bonus, desbloquea el premio igual que una visita.
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 44/44 OK, `next build` OK (rutas `/api/claims/create`, `/dashboard/aprobar`).
+
+## 2026-10-14 — Fix spinner infinito en visita recurrente con antifraude
+
+- **Síntoma:** al escanear por 2ª vez en el día, quedaba "Sumando tu sello…" para siempre.
+- **Causa:** en `visit-flow.tsx` los errores con motivo (`daily_limit`, `too_soon`, 400/401) solo mostraban un toast y no pasaban a la pantalla final; con sesión persistida el render volvía al spinner.
+- **Fix:** todo error de scan va a la pantalla final; el toast queda solo para motivos no terminales. La pantalla "Por hoy ya sumaste" ahora ofrece pedir sellos extra (reseña/historia) para que haya algo útil que hacer.
+- **Archivos:** `src/app/v/[token]/visit-flow.tsx`.
+- **Verificación:** `eslint` OK, `tsc` OK, `vitest` 44/44 OK, `next build` OK.
+
 ---
 
 ## Cómo agregar una entrada nueva

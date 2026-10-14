@@ -86,6 +86,12 @@ export function VisitFlow({
     | { stage: "error"; message: string }
   >({ stage: "idle" });
   const [redeemNow, setRedeemNow] = useState(() => Date.now());
+  const [claim, setClaim] = useState<
+    | { stage: "idle" }
+    | { stage: "creating" }
+    | { stage: "pending"; kind: string }
+    | { stage: "error"; message: string }
+  >({ stage: "idle" });
 
   const confirmationRef = useRef<ConfirmationResult | null>(null);
   const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
@@ -137,13 +143,16 @@ export function VisitFlow({
         "No pudimos sumar tu sello. Probá de nuevo en un momento.";
       const reason = (data as { reason?: string })?.reason;
       setScanError({ message, reason });
-      if (!reason || reason === "expired") setStep("done");
-      else toast.error(message);
+      // Siempre a la pantalla final: si no, la visita recurrente queda en el
+      // spinner para siempre (el antifraude responde 429 con motivo).
+      setStep("done");
+      const terminalReasons = ["expired", "daily_limit", "too_soon"];
+      if (reason && !terminalReasons.includes(reason)) toast.error(message);
     } catch (error) {
       console.error("[v] falló el registro", error);
       const message = "No pudimos sumar tu sello. Revisá tu conexión.";
       setScanError({ message });
-      toast.error(message);
+      setStep("done");
     } finally {
       setScanning(false);
     }
@@ -243,6 +252,40 @@ export function VisitFlow({
       return;
     }
     void scanWithToken(idToken);
+  }
+
+  async function handleClaim(kind: "google_review" | "instagram_story") {
+    const idToken = idTokenRef.current;
+    if (!idToken) {
+      setClaim({ stage: "error", message: "Tu sesión venció. Recargá la página." });
+      return;
+    }
+    setClaim({ stage: "creating" });
+    try {
+      const response = await fetch("/api/claims/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cafeId, idToken, kind }),
+      });
+      const data = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+      } | null;
+      if (response.ok && data?.ok) {
+        setClaim({ stage: "pending", kind });
+      } else {
+        setClaim({
+          stage: "error",
+          message: data?.error ?? "No pudimos pedir el sello extra. Probá de nuevo.",
+        });
+      }
+    } catch (error) {
+      console.error("[v] falló el pedido de sello extra", error);
+      setClaim({
+        stage: "error",
+        message: "No pudimos pedir el sello extra. Revisá tu conexión.",
+      });
+    }
   }
 
   async function handleCreateCode() {
@@ -364,6 +407,53 @@ export function VisitFlow({
             {progress.nearReward && !progress.complete ? (
               <Badge variant="secondary">¡Te falta poco!</Badge>
             ) : null}
+            {!progress.complete ? (
+              <div className="flex w-full flex-col items-center gap-3 border-t pt-4">
+                <p className="text-sm font-medium">Sumá sellos extra</p>
+                {claim.stage === "pending" ? (
+                  <p role="status" className="text-center text-sm text-muted-foreground">
+                    Pedido enviado. Mostralo en el mostrador para que te lo
+                    aprueben y sumás al instante.
+                  </p>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={claim.stage === "creating"}
+                        onClick={() => handleClaim("google_review")}
+                      >
+                        {claim.stage === "creating" ? (
+                          <Loader2 className="animate-spin" aria-hidden="true" />
+                        ) : null}
+                        Reseña en Google +2
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={claim.stage === "creating"}
+                        onClick={() => handleClaim("instagram_story")}
+                      >
+                        {claim.stage === "creating" ? (
+                          <Loader2 className="animate-spin" aria-hidden="true" />
+                        ) : null}
+                        Historia +1
+                      </Button>
+                    </div>
+                    <p className="text-center text-xs text-muted-foreground">
+                      Dejá la reseña o subí la historia y pedilo acá. El equipo
+                      lo confirma en el momento.
+                    </p>
+                  </>
+                )}
+                {claim.stage === "error" ? (
+                  <p role="alert" className="text-center text-sm text-destructive">
+                    {claim.message}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
             {progress.complete ? (
               <div className="flex w-full flex-col items-center gap-3 border-t pt-4">
                 {redeem.stage === "idle" || redeem.stage === "error" ? (
@@ -437,13 +527,15 @@ export function VisitFlow({
 
     const terminal = scanError?.reason === "expired" || scanError?.reason === "daily_limit" || scanError?.reason === "too_soon";
     const isExpired = scanError?.reason === "expired";
+    const isRateLimited =
+      scanError?.reason === "daily_limit" || scanError?.reason === "too_soon";
     return (
       <Card>
         <CardHeader className="items-center text-center">
           <CardTitle className="text-2xl">
             {isExpired
               ? "Este código ya se renovó"
-              : scanError?.reason === "daily_limit" || scanError?.reason === "too_soon"
+              : isRateLimited
                 ? "Por hoy ya sumaste"
                 : "No pudimos sumar tu sello"}
           </CardTitle>
@@ -453,7 +545,42 @@ export function VisitFlow({
               : scanError?.message}
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex justify-center">
+        <CardContent className="flex flex-col items-center gap-4">
+          {isRateLimited ? (
+            <div className="flex w-full flex-col items-center gap-3 border-t pt-4">
+              <p className="text-sm font-medium">Igual podés sumar sellos extra</p>
+              {claim.stage === "pending" ? (
+                <p role="status" className="text-center text-sm text-muted-foreground">
+                  Pedido enviado. Mostralo en el mostrador para que te lo
+                  aprueben y sumás al instante.
+                </p>
+              ) : (
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={claim.stage === "creating"}
+                    onClick={() => handleClaim("google_review")}
+                  >
+                    Reseña en Google +2
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={claim.stage === "creating"}
+                    onClick={() => handleClaim("instagram_story")}
+                  >
+                    Historia +1
+                  </Button>
+                </div>
+              )}
+              {claim.stage === "error" ? (
+                <p role="alert" className="text-center text-sm text-destructive">
+                  {claim.message}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
           {!terminal ? (
             <Button onClick={handleRetry} disabled={scanning} size="lg">
               {scanning ? <Loader2 className="animate-spin" /> : null}

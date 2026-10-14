@@ -80,6 +80,11 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      match /claims/{claimId} {
+        allow read: if isMember(cafeId);
+        allow write: if false;
+      }
+
       match /opportunities/{opportunityId} {
         allow read: if isManager(cafeId);
         allow write: if false;
